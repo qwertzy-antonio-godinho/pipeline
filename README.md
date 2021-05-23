@@ -1,9 +1,9 @@
 # pipeline
 Sets up a local pipeline using Docker, DinD, sysbox, Jenkins, Gitea, python, pyenv, pipenv, tox, pdoc3, fint. 
 
-- Uses Ubuntu 20.04 as base the base Operating System. 
+- Uses Ubuntu 20.04 as the base Operating System. 
 
- - Intended for a local installation. If using in a Cloud environment or Internet facing server you should setup certifcates, configure domain names and deal with any extra necessary configurations required for network, e-mail and application settings.
+ - Intended for a local installation. If using in a Cloud environment or Internet facing server you should setup certificates, configure domain names and deal with any extra necessary configurations required for network, e-mail and application settings.
 
 - The pipeline it setup to test Python applications, obviously it can be expanded to support other languages, but it's outside the scope for this example.
 
