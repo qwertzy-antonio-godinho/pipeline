@@ -1,0 +1,31 @@
+FROM python:3.9-slim AS base
+
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONFAULTHANDLER 1
+
+RUN apt update && apt install -y git --no-install-recommends && apt clean
+
+FROM base AS base-deps
+
+RUN pip install pipenv tox
+
+COPY Pipfile . 
+COPY Pipfile.lock .
+
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
+
+FROM base-deps AS build-image
+
+COPY --from=base-deps /.venv /.venv
+ENV PATH="/.venv/bin:$PATH"
+
+RUN useradd --create-home test
+RUN chown -R test:test /home/test
+
+WORKDIR /home/test
+
+USER test
+
+COPY . .

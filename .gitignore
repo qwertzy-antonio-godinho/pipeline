@@ -1,0 +1,7 @@
+.*
+**/__*
+dist/
+reports/
+!.env
+!.gitignore
+!.dockerignore

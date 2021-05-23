@@ -1,0 +1,125 @@
+networks:
+
+  #
+  # Network
+  #
+  pipeline-network:
+    external: false
+    ipam:
+      config:
+        - subnet: ${PIPELINE_SUBNET}
+
+volumes:
+
+  #
+  # Volumes
+  #
+  gitea-database-data:
+
+  gitea-application-data:
+  gitea-application-logs:
+  gitea-application-repos:
+
+  jenkins-data:
+  jenkins-logs:
+  jenkins-certs:
+  jenkins-dind-docker:
+  
+services:
+
+  #
+  # Postgres
+  #
+  gitea-database:
+    image: ${PIPELINE_POSTGRES_IMAGE}
+    restart: always
+    hostname: ${PIPELINE_POSTGRES_HOSTNAME}
+    networks:
+      pipeline-network:
+        ipv4_address: ${PIPELINE_POSTGRES_IPV4}
+    ports:
+      - "5432:5432"
+    volumes:
+      - gitea-database-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${PIPELINE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${PIPELINE_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${PIPELINE_POSTGRES_DATABASE}
+
+  #
+  # Gitea
+  #
+  gitea-application:
+    image: ${PIPELINE_GITEA_IMAGE}
+    restart: always
+    depends_on:
+      - gitea-database
+    hostname: ${PIPELINE_GITEA_HOSTNAME}
+    networks:
+      pipeline-network:
+        ipv4_address: ${PIPELINE_GITEA_IPV4}
+    ports:
+      - "3022:22"
+      - "3000:3000"
+    volumes:
+      - gitea-application-data:/data
+      - gitea-application-logs:/data/gitea/log
+      - gitea-application-repos:/data/git/repositories
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - GITEA__server__DOMAIN=${PIPELINE_GITEA_SERVER_DOMAIN}
+      - GITEA__server__SSH_DOMAIN=${PIPELINE_GITEA_SERVER_SSH_DOMAIN}
+      - GITEA__server__HTTP_PORT=${PIPELINE_GITEA_SERVER_HTTP_PORT}
+      - GITEA__server__ROOT_URL=${PIPELINE_GITEA_SERVER_ROOT_URL}
+      - GITEA__database__DB_TYPE=${PIPELINE_GITEA_DATABASE_DB_TYPE}
+      - GITEA__database__HOST=${PIPELINE_GITEA_DATABASE_HOST}
+      - GITEA__database__USER=${PIPELINE_GITEA_DATABASE_USER}
+      - GITEA__database__PASSWD=${PIPELINE_GITEA_DATABASE_PASSWORD}
+      - GITEA__database__NAME=${PIPELINE_GITEA_DATABASE_NAME}
+
+  #
+  # DinD
+  #
+  jenkins-dind:
+    image: ${PIPELINE_DIND_IMAGE}
+    restart: always
+    hostname: ${PIPELINE_DIND_HOSTNAME}
+    networks:
+      pipeline-network:
+        ipv4_address: ${PIPELINE_DIND_IPV4}
+    ports:
+      - "2376:2376"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-logs:/var/log/jenkins
+      - jenkins-certs:/certs/client
+      - jenkins-dind-docker:/var/lib/docker
+    environment: 
+      - DOCKER_TLS_CERTDIR=/certs
+
+  #
+  # Jenkins
+  #
+  jenkins-application:
+    build:
+      context: ${PIPELINE_JENKINS_CONTEXT}
+      dockerfile: ${PIPELINE_JENKINS_DOCKERFILE}
+    image: ${PIPELINE_JENKINS_IMAGE}
+    restart: always
+    depends_on:
+      - jenkins-dind
+    hostname: ${PIPELINE_JENKINS_HOSTNAME}
+    networks:
+      pipeline-network:
+        ipv4_address: ${PIPELINE_JENKINS_IPV4}
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-logs:/var/log/jenkins
+      - jenkins-certs:/certs/client:ro
+    environment: 
+      - DOCKER_HOST=${PIPELINE_JENKINS_DOCKER_HOST}
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
