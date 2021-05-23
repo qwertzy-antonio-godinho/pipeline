@@ -81,13 +81,13 @@ Test result trend using Junit and test report:
 ## Notes
 
 **Notes on hostnames:**
-1. Postgres Database has hostname: ```pipeline.gitea.postgres```
-2. Gitea application has hostname: ```pipeline.gitea```
-3. Jenkins application has hostname: ```pipeline.jenkins```
+- Postgres Database has hostname: ```pipeline.gitea.postgres``` IP 172.30.40.22
+- Gitea application has hostname: ```pipeline.gitea``` IP 172.30.40.2
+- Jenkins application has hostname: ```pipeline.jenkins``` IP 172.30.40.1
 
 **Notes on tox:**
-1. Execute tests ```[pipenv run] tox -e test```
-2. Execute linting checks ```[pipenv run] tox -e lint```
-3. Generate src and test documentation ```[pipenv run] tox -e docs```
-4. Generate installable build ```[pipenv run] tox -e build```
-5. Run everything ```[pipenv run] tox```
+- Run everything ```[pipenv run] tox```
+- Execute tests ```[pipenv run] tox -e test```
+- Execute linting checks ```[pipenv run] tox -e lint```
+- Generate src and test documentation ```[pipenv run] tox -e docs```
+- Generate installable build ```[pipenv run] tox -e build```
