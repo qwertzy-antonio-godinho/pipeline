@@ -1,0 +1,9 @@
+**
+!Pipfile
+!Pipfile.lock
+!tox.ini
+!pyproject.toml
+!.env
+!src/
+!tests/
+**/__*

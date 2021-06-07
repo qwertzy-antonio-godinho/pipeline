@@ -24,7 +24,9 @@ volumes:
   jenkins-logs:
   jenkins-certs:
   jenkins-dind-docker:
-  
+
+  devpi-data:
+
 services:
 
   #
@@ -105,6 +107,9 @@ services:
     build:
       context: ${PIPELINE_JENKINS_CONTEXT}
       dockerfile: ${PIPELINE_JENKINS_DOCKERFILE}
+      args:
+        PIPELINE_JENKINS_ADMIN_USERNAME: ${PIPELINE_JENKINS_ADMIN_USERNAME}
+        PIPELINE_JENKINS_ADMIN_PASSWORD: ${PIPELINE_JENKINS_ADMIN_PASSWORD}
     image: ${PIPELINE_JENKINS_IMAGE}
     restart: always
     depends_on:
@@ -123,3 +128,30 @@ services:
       - DOCKER_HOST=${PIPELINE_JENKINS_DOCKER_HOST}
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
+  
+  #
+  # DevPi
+  #
+  devpi:
+    build:
+      context: ${PIPELINE_DEVPI_CONTEXT}
+      dockerfile: ${PIPELINE_DEVPI_DOCKERFILE}
+      args:
+        PIPELINE_DEVPI_ROOT_PASSWORD: ${PIPELINE_DEVPI_ROOT_PASSWORD}
+        PIPELINE_DEVPI_USER_NAME: ${PIPELINE_DEVPI_USER_NAME}
+        PIPELINE_DEVPI_USER_PASSWORD: ${PIPELINE_DEVPI_USER_PASSWORD}
+        PIPELINE_DEVPI_PORT: ${PIPELINE_DEVPI_PORT}
+        PIPELINE_DEVPI_SERVER_DIR: ${PIPELINE_DEVPI_SERVER_DIR}
+        PIPELINE_DEVPI_INDEX: ${PIPELINE_DEVPI_INDEX}
+        PIPELINE_DEVPI_REPO: ${PIPELINE_DEVPI_REPO}
+        PIPELINE_DEVPI_THEME: ${PIPELINE_DEVPI_THEME}
+    image: ${PIPELINE_DEVPI_IMAGE}
+    restart: always
+    hostname: ${PIPELINE_DEVPI_HOSTNAME}
+    networks:
+      pipeline-network:
+        ipv4_address: ${PIPELINE_DEVPI_IPV4}
+    ports:
+      - ${PIPELINE_DEVPI_PORT}:${PIPELINE_DEVPI_PORT}
+    volumes:
+      - devpi-data:/devpi

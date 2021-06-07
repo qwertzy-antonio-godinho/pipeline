@@ -1,0 +1,19 @@
+FROM python:3.9-slim
+
+ENV PYTHONFAULTHANDLER 1
+
+RUN useradd --create-home prod && \
+    chown -R prod /home/prod
+
+WORKDIR /home/prod
+
+USER prod 
+
+RUN mkdir -p ~/.pip \
+    && echo [global] >> ~/.pip/pip.conf \
+    && echo extra-index-url = http://pipeline.devpi:3242/pipeline/build/+simple >> ~/.pip/pip.conf \
+    && echo [install] >> ~/.pip/pip.conf \
+    && echo trusted-host = pipeline.devpi >> ~/.pip/pip.conf \
+    && cat ~/.pip/pip.conf 
+
+ENV PATH="~/.local/bin/:$PATH"
